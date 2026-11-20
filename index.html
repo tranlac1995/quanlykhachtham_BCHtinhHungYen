@@ -1,231 +1,568 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#123e2b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quản lý Admin">
+
 <title>Quản lý Admin</title>
+
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Arial, sans-serif;
   background: url('image.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #000;
+  margin: 0;
+  padding: 10px;
 }
+
 .container {
   max-width: 1200px;
   margin: 20px auto;
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.65);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 20px;
   border-radius: 15px;
-}
-h2 {
-  text-align: center;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: rgba(255,255,255,0.6);
-  border-radius: 10px;
   overflow: hidden;
 }
+
+h2 {
+  text-align: center;
+  color: #123e2b;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+button {
+  padding: 8px 12px;
+  margin: 2px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+}
+
+.btn-duyet {
+  background: green;
+  color: white;
+}
+
+.btn-xoa {
+  background: red;
+  color: white;
+}
+
+.refresh {
+  background: #0055aa;
+  color: white;
+  padding: 10px 15px;
+}
+
+.install-btn {
+  background: #123e2b;
+  color: #fff;
+  padding: 10px 15px;
+  font-weight: bold;
+}
+
+#installBtn {
+  display: none;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: collapse;
+  background: rgba(255,255,255,0.8);
+}
+
 th, td {
   border: 1px solid #ccc;
   padding: 8px;
   text-align: center;
+  white-space: nowrap;
 }
+
 th {
-  background: rgba(200,200,200,0.5);
+  background: rgba(200,200,200,0.8);
 }
-button {
-  padding: 5px 10px;
-  margin: 2px;
-  cursor: pointer;
+
+#chart-container {
+  margin: 20px 0;
 }
-.btn-duyet { background: green; color: white; }
-.btn-xoa { background: red; color: white; }
-#chart-container { margin: 20px 0; }
-#statusChart, #provinceChart, #unitChart {
-  max-height: 200px;
-  margin: 10px 0;
-  background: rgba(255,255,255,0.8);
-}
-.logout {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: #003366;
-  color: white;
+
+#statusChart,
+#provinceChart,
+#unitChart {
+  max-height: 250px;
+  margin: 15px 0;
+  background: rgba(255,255,255,0.85);
+  border-radius: 10px;
   padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
 }
-.refresh {
-  background: #0055aa;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+
+#appStatus {
+  color: #24553b;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 5px;
+  }
+
+  .container {
+    margin: 8px auto;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .toolbar button {
+    flex: 1;
+  }
 }
 </style>
 </head>
+
 <body>
 
-
-
 <div class="container">
-  <h2>Quản lý Đơn Đăng Ký</h2>
-  <button class="refresh" onclick="loadData()">Làm mới</button>
-  <table id="adminTable">
-    <thead>
-      <tr>
-        <th>Họ tên</th>
-        <th>CCCD</th>
-        <th>Quan hệ</th>
-	<th>Số lượng</th>
-	<th>Phương tiện</th>
-        <th>Quân nhân</th>
-        <th>SĐT</th>
-        <th>Tỉnh/Thành</th>
-        <th>Đơn vị</th>
-        <th>Trạng thái</th>
-	<th>Thời gian vào</th>
-	<th>Thời gian ra</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody id="adminBody">
-      <tr><td colspan="9">Đang tải...</td></tr>
-    </tbody>
-  </table>
+
+  <h2>QUẢN LÝ ĐƠN ĐĂNG KÝ</h2>
+
+  <div class="toolbar">
+    <button class="refresh" onclick="loadData()">⟳ Làm mới</button>
+
+    <button id="installBtn" class="install-btn" onclick="installApp()">
+      📲 Cài đặt ứng dụng
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="adminTable">
+      <thead>
+        <tr>
+          <th>Họ tên</th>
+          <th>CCCD</th>
+          <th>Quan hệ</th>
+          <th>Số lượng</th>
+          <th>Phương tiện</th>
+          <th>Quân nhân</th>
+          <th>SĐT</th>
+          <th>Tỉnh/Thành</th>
+          <th>Đơn vị</th>
+          <th>Trạng thái</th>
+          <th>Thời gian vào</th>
+          <th>Thời gian ra</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+
+      <tbody id="adminBody">
+        <tr><td colspan="13">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <div id="chart-container">
     <canvas id="statusChart"></canvas>
     <canvas id="provinceChart"></canvas>
     <canvas id="unitChart"></canvas>
   </div>
+
+  <div id="appStatus"></div>
+
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbz1Ngt7v3BqND8g_hHA7av7Q5XaLnupGCrHr75e_HWaRy9xmQ5SG8rtJWaTGyaHW0Zz2g/exec";
 
-
-
 let data = [];
+let deferredPrompt = null;
+let charts = [];
+
+// ==============================
+// CÀI ĐẶT PWA
+// ==============================
+
+const installBtn = document.getElementById("installBtn");
+const appStatus = document.getElementById("appStatus");
+
+function isInstalled() {
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         window.matchMedia("(display-mode: fullscreen)").matches ||
+         navigator.standalone === true;
+}
+
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+if (isInstalled()) {
+  installBtn.style.display = "none";
+  appStatus.textContent = "Ứng dụng đang chạy ở chế độ đã cài đặt.";
+} else if (isIOS()) {
+  installBtn.style.display = "block";
+  appStatus.textContent = "Có thể cài ứng dụng bằng Safari trên iPhone/iPad.";
+} else {
+  appStatus.textContent = "Bạn có thể cài ứng dụng trên thiết bị này nếu trình duyệt hỗ trợ.";
+}
+
+// Nhận sự kiện cài đặt từ Chrome và Edge
+window.addEventListener("beforeinstallprompt", function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "block";
+});
+
+async function installApp() {
+
+  if (isInstalled()) {
+    alert("Ứng dụng đã được cài đặt trên thiết bị.");
+    return;
+  }
+
+  // iPhone và iPad
+  if (isIOS()) {
+    alert(
+      "CÀI ĐẶT TRÊN IPHONE/IPAD:\n\n" +
+      "1. Mở trang web bằng trình duyệt Safari.\n" +
+      "2. Nhấn nút Chia sẻ ở phía dưới màn hình.\n" +
+      "3. Chọn Thêm vào MH chính (Add to Home Screen).\n" +
+      "4. Nhấn Thêm để hoàn tất."
+    );
+    return;
+  }
+
+  // Chrome / Edge trên điện thoại và máy tính
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+
+    const result = await deferredPrompt.userChoice;
+
+    if (result && result.outcome === "accepted") {
+      appStatus.textContent = "Đang cài đặt ứng dụng...";
+    }
+
+    deferredPrompt = null;
+    installBtn.style.display = "none";
+    return;
+  }
+
+  // Trường hợp trình duyệt không phát sự kiện cài đặt
+  alert(
+    "Nếu trình duyệt hỗ trợ cài đặt ứng dụng:\n\n" +
+    "• Chrome: Nhấn dấu ba chấm → Cài đặt ứng dụng.\n" +
+    "• Edge: Nhấn dấu ba chấm → Ứng dụng → Cài đặt trang web này dưới dạng ứng dụng.\n\n" +
+    "Nếu không thấy lựa chọn này, hãy kiểm tra lại manifest.json, sw.js và biểu tượng ứng dụng."
+  );
+}
+
+// Khi cài đặt thành công
+window.addEventListener("appinstalled", function() {
+  installBtn.style.display = "none";
+  appStatus.textContent = "Đã cài đặt ứng dụng thành công.";
+  deferredPrompt = null;
+});
+
+// Đăng ký Service Worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function() {
+    navigator.serviceWorker.register("./sw.js")
+      .then(function() {
+        console.log("Service Worker đã hoạt động.");
+      })
+      .catch(function(error) {
+        console.error("Lỗi Service Worker:", error);
+      });
+  });
+}
+
+// ==============================
+// TẢI DỮ LIỆU
+// ==============================
 
 function loadData() {
+  const body = document.getElementById("adminBody");
+
   fetch(API_URL)
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error("Không thể kết nối máy chủ");
+      return res.json();
+    })
     .then(d => {
+      if (!Array.isArray(d)) {
+        throw new Error("Dữ liệu trả về không hợp lệ");
+      }
+
       data = d;
       renderTable();
       drawCharts();
     })
     .catch(err => {
-      console.error('Lỗi fetch data:', err);
-      document.getElementById('adminBody').innerHTML = '<tr><td colspan="9">Lỗi tải dữ liệu</td></tr>';
+      console.error("Lỗi fetch data:", err);
+      body.innerHTML = '<tr><td colspan="13">Lỗi tải dữ liệu. Vui lòng thử làm mới.</td></tr>';
     });
 }
 
+// ==============================
+// HIỂN THỊ BẢNG
+// ==============================
+
 function renderTable() {
-  const body = document.getElementById('adminBody');
-  body.innerHTML = '';
+  const body = document.getElementById("adminBody");
+  body.innerHTML = "";
+
+  if (data.length === 0) {
+    body.innerHTML = '<tr><td colspan="13">Chưa có đơn đăng ký.</td></tr>';
+    return;
+  }
+
   data.forEach((row, index) => {
-    body.innerHTML += `<tr>
-      <td>${row.hoten || ''}</td>
-      <td>${row.cccd || ''}</td>
-      <td>${row.quanhe || ''}</td>
-	<td>${row.soluong || ''}</td>
-	<td>${row.phuongtien || ''}</td>
-      <td>${row.quannhan || ''}</td>
-      <td>${row.sdt || ''}</td>
-      <td>${row.tinhthanhpho || ''}</td>
-      <td>${row.donvi || ''}</td>
-      <td>${row.trangthai || 'Chờ duyệt'}</td>
-	<td>${row.thoigianvao || ''}</td> <!-- Thời gian vào -->
- 	 <td>${row.thoigianra || ''}</td>   <!-- Thời gian ra -->
-      <td>
-        <button class="btn-duyet" onclick="duyet(${index})">Duyệt</button>
-        <button class="btn-xoa" onclick="xoa(${index})">Xóa</button>
-      </td>
-    </tr>`;
+    const tr = document.createElement("tr");
+
+    const values = [
+      row.hoten,
+      row.cccd,
+      row.quanhe,
+      row.soluong,
+      row.phuongtien,
+      row.quannhan,
+      row.sdt,
+      row.tinhthanhpho,
+      row.donvi,
+      row.trangthai || "Chờ duyệt",
+      row.thoigianvao,
+      row.thoigianra
+    ];
+
+    values.forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value == null ? "" : value;
+      tr.appendChild(td);
+    });
+
+    const actionCell = document.createElement("td");
+
+    const approveBtn = document.createElement("button");
+    approveBtn.className = "btn-duyet";
+    approveBtn.textContent = "Duyệt";
+    approveBtn.onclick = () => duyet(index);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn-xoa";
+    deleteBtn.textContent = "Xóa";
+    deleteBtn.onclick = () => xoa(index);
+
+    actionCell.appendChild(approveBtn);
+    actionCell.appendChild(deleteBtn);
+    tr.appendChild(actionCell);
+
+    body.appendChild(tr);
   });
 }
 
+// ==============================
+// DUYỆT ĐƠN
+// ==============================
+
 function duyet(index) {
+  if (!confirm("Bạn có chắc chắn muốn duyệt đơn này?")) return;
+
   fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({action: 'update', row: index, trangthai: 'Đã duyệt'})
-  }).then(() => loadData()).catch(err => console.error('Lỗi duyệt:', err));
+    method: "POST",
+    body: JSON.stringify({
+      action: "update",
+      row: index,
+      trangthai: "Đã duyệt"
+    })
+  })
+  .then(() => loadData())
+  .catch(err => console.error("Lỗi duyệt:", err));
 }
 
+// ==============================
+// XÓA ĐƠN
+// ==============================
+
 function xoa(index) {
-  if (confirm('Xóa đơn?')) {
+  if (confirm("Xóa đơn?")) {
     fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({action: 'delete', row: index})
-    }).then(() => loadData()).catch(err => console.error('Lỗi xóa:', err));
+      method: "POST",
+      body: JSON.stringify({
+        action: "delete",
+        row: index
+      })
+    })
+    .then(() => loadData())
+    .catch(err => console.error("Lỗi xóa:", err));
   }
 }
 
+// ==============================
+// VẼ BIỂU ĐỒ
+// ==============================
+
 function drawCharts() {
-  const container = document.getElementById('chart-container');
+  const container = document.getElementById("chart-container");
 
-  ['statusChart', 'provinceChart', 'unitChart'].forEach(id => {
-    const old = document.getElementById(id);
-    if (old) old.remove();
-  });
+  // Hủy biểu đồ cũ trước khi vẽ lại
+  charts.forEach(chart => chart.destroy());
+  charts = [];
 
-  const newStatus = document.createElement('canvas'); newStatus.id = 'statusChart';
-  const newProvince = document.createElement('canvas'); newProvince.id = 'provinceChart';
-  const newUnit = document.createElement('canvas'); newUnit.id = 'unitChart';
-  container.appendChild(newStatus);
-  container.appendChild(newProvince);
-  container.appendChild(newUnit);
+  const cho = data.filter(r =>
+    (r.trangthai || "Chờ duyệt") === "Chờ duyệt"
+  ).length;
 
-  const cho = data.filter(r => (r.trangthai || 'Chờ duyệt') === 'Chờ duyệt').length;
-  const duyet = data.filter(r => r.trangthai === 'Đã duyệt').length;
-  const tu = data.filter(r => r.trangthai === 'Từ chối').length;
+  const duyet = data.filter(r =>
+    r.trangthai === "Đã duyệt"
+  ).length;
 
-  const provinceCount = data.reduce((acc, r) => { 
-    const tinh = r.tinhthanhpho || 'Không xác định';
-    acc[tinh] = (acc[tinh] || 0) + 1; 
-    return acc; 
+  const tu = data.filter(r =>
+    r.trangthai === "Từ chối"
+  ).length;
+
+  const provinceCount = data.reduce((acc, r) => {
+    const tinh = r.tinhthanhpho || "Không xác định";
+    acc[tinh] = (acc[tinh] || 0) + 1;
+    return acc;
   }, {});
 
-  const unitCount = data.reduce((acc, r) => { 
-    const dv = r.donvi || 'Không xác định';
-    acc[dv] = (acc[dv] || 0) + 1; 
-    return acc; 
+  const unitCount = data.reduce((acc, r) => {
+    const dv = r.donvi || "Không xác định";
+    acc[dv] = (acc[dv] || 0) + 1;
+    return acc;
   }, {});
 
-  new Chart(newStatus.getContext('2d'), {
-    type: 'pie',
-    data: {
-      labels: ['Chờ duyệt', 'Đã duyệt', 'Từ chối'],
-      datasets: [{ data: [cho, duyet, tu], backgroundColor: ['#FFD700', '#00FF00', '#FF0000'] }]
-    },
-    options: { responsive: true, plugins: { legend: { position: 'top' } } }
-  });
+  charts.push(new Chart(
+    document.getElementById("statusChart").getContext("2d"),
+    {
+      type: "pie",
+      data: {
+        labels: ["Chờ duyệt", "Đã duyệt", "Từ chối"],
+        datasets: [{
+          data: [cho, duyet, tu],
+          backgroundColor: ["#FFD700", "#00AA00", "#FF0000"]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { position: "top" },
+          title: {
+            display: true,
+            text: "Thống kê trạng thái đơn đăng ký"
+          }
+        }
+      }
+    }
+  ));
 
-  new Chart(newProvince.getContext('2d'), {
-    type: 'bar',
-    data: { labels: Object.keys(provinceCount), datasets: [{ label: 'Số đơn theo tỉnh', data: Object.values(provinceCount), backgroundColor: '#87CEEB' }] },
-    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
-  });
+  charts.push(new Chart(
+    document.getElementById("provinceChart").getContext("2d"),
+    {
+      type: "bar",
+      data: {
+        labels: Object.keys(provinceCount),
+        datasets: [{
+          label: "Số đơn theo tỉnh",
+          data: Object.values(provinceCount),
+          backgroundColor: "#87CEEB"
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "top" },
+          title: {
+            display: true,
+            text: "Thống kê theo tỉnh/thành"
+          }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    }
+  ));
 
-  new Chart(newUnit.getContext('2d'), {
-    type: 'bar',
-    data: { labels: Object.keys(unitCount), datasets: [{ label: 'Số đơn theo Đơn vị', data: Object.values(unitCount), backgroundColor: '#FFA500' }] },
-    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
-  });
+  charts.push(new Chart(
+    document.getElementById("unitChart").getContext("2d"),
+    {
+      type: "bar",
+      data: {
+        labels: Object.keys(unitCount),
+        datasets: [{
+          label: "Số đơn theo đơn vị",
+          data: Object.values(unitCount),
+          backgroundColor: "#FFA500"
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "top" },
+          title: {
+            display: true,
+            text: "Thống kê theo đơn vị"
+          }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    }
+  ));
 }
 
-
+// ==============================
+// KHỞI ĐỘNG VÀ TỰ ĐỘNG LÀM MỚI
+// ==============================
 
 loadData();
-setInterval(loadData, 5000); // Realtime 5s
+setInterval(loadData, 5000);
+
 </script>
+
 </body>
 </html>
