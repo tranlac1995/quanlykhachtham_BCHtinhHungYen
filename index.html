@@ -190,7 +190,7 @@ th {
           <th>SĐT</th>
           <th>Tỉnh/Thành</th>
           <th>Đơn vị</th>
-          <th>Trạng thái</th>
+     <th>Dự kiến thời gian thăm</th>     <th>Trạng thái</th>
           <th>Thời gian vào</th>
           <th>Thời gian ra</th>
           <th>Hành động</th>
@@ -214,7 +214,7 @@ th {
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbz1Ngt7v3BqND8g_hHA7av7Q5XaLnupGCrHr75e_HWaRy9xmQ5SG8rtJWaTGyaHW0Zz2g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxudu2zlSOkbI2HBkjUZBOo44FfzqkGsz_IHDG_Z2YUTrJma0r3DRFXGudlmLm4Fdh5Tw/exec";
 
 let data = [];
 let deferredPrompt = null;
@@ -353,7 +353,7 @@ function renderTable() {
   body.innerHTML = "";
 
   if (data.length === 0) {
-    body.innerHTML = '<tr><td colspan="13">Chưa có đơn đăng ký.</td></tr>';
+    body.innerHTML = '<tr><td colspan="14">Chưa có đơn đăng ký.</td></tr>';
     return;
   }
 
@@ -370,7 +370,7 @@ function renderTable() {
       row.sdt,
       row.tinhthanhpho,
       row.donvi,
-      row.trangthai || "Chờ duyệt",
+  row.dukienthoigiantham || "Chưa có thông tin",    row.trangthai || "Chờ duyệt",
       row.thoigianvao,
       row.thoigianra
     ];
